@@ -95,11 +95,9 @@
         {inducedEMF}
         {instantaneousFlux}
       />
+      <TeamFooter />
     {/if}
   </main>
-
-  <!-- ─── Team Footer (all tabs) ───────────────────────── -->
-  <TeamFooter />
 
   <!-- ─── Page Footer ──────────────────────────────────── -->
   <footer class="footer">
