@@ -1,10 +1,12 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-  import { Zap, Magnet, Radio } from 'lucide-svelte';
+  import { Zap, Magnet, Radio, BookOpen, Users } from 'lucide-svelte';
   import TransformerSim from '$lib/components/TransformerSim.svelte';
   import FluxSim from '$lib/components/FluxSim.svelte';
+  import TechnicalBrief from '$lib/components/TechnicalBrief.svelte';
+  import TeamFooter from '$lib/components/TeamFooter.svelte';
 
-  let currentView = $state<'main' | 'flux'>('main');
+  let currentView = $state<'main' | 'flux' | 'brief'>('main');
 
   // Shared simulation state
   let primaryTurns = $state(400);
@@ -13,6 +15,14 @@
   let frequency = $state(60);
   let running = $state(true);
   let fluxIntensity = $state(80);
+  
+  // Derived values for Technical Brief
+  let turnsRatio = $derived(secondaryTurns / primaryTurns);
+  let secondaryVoltage = $derived(primaryVoltage * turnsRatio);
+
+   // Additional derived values for Technical Brief
+  let inducedEMF = $derived(secondaryTurns * 2 * Math.PI * frequency * (primaryVoltage / (2 * Math.PI * frequency * primaryTurns)));
+  let instantaneousFlux = $derived((primaryVoltage / (2 * Math.PI * frequency * primaryTurns)) * 0.5);
 </script>
 
 <div class="page">
@@ -53,6 +63,14 @@
         <Radio size={16} />
         <span>Flux Visualizer</span>
       </button>
+      <button
+        class="tab-btn"
+        class:active={currentView === 'brief'}
+        onclick={() => (currentView = 'brief')}
+      >
+        <BookOpen size={16} />
+        <span>Technical Brief</span>
+      </button>
     </div>
   </nav>
 
@@ -66,10 +84,26 @@
         bind:frequency
         bind:running
       />
-    {:else}
+    {:else if currentView === 'flux'}
       <FluxSim bind:intensity={fluxIntensity} isAC={true} />
+    {:else}
+     {#if currentView === 'brief'}
+  <TechnicalBrief
+    turnsRatio={turnsRatio}
+    primaryTurns={primaryTurns}
+    secondaryTurns={secondaryTurns}
+    primaryVoltage={primaryVoltage}
+    secondaryVoltage={secondaryVoltage}
+    frequency={frequency}
+    inducedEMF={inducedEMF}
+    instantaneousFlux={instantaneousFlux}
+  />
+{/if}
     {/if}
   </main>
+
+  <!-- ─── Team Footer (Visible on all pages) ──────────────── -->
+  <TeamFooter />
 
   <!-- ─── Footer ───────────────────────────────────────── -->
   <footer class="footer">
@@ -221,7 +255,7 @@
     .hero { padding: 2rem 1rem 1.75rem; }
     .tab-nav { padding: 0 1rem; }
     .content { padding: 1.25rem 1rem; }
-    .tab-btn span { display: none; }
+    .tab-btn span { font-size: 0; }
     .tab-btn { padding: 0.6rem 1rem; }
   }
 </style>
