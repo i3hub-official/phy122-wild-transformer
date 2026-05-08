@@ -1,3 +1,4 @@
+<!-- src/lib/components/EquationCard.svelte -->
 <script lang="ts">
   interface Props {
     title: string;
@@ -42,7 +43,7 @@
   .equation-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 2px solid var(--accent);
+    border-left: 3px solid var(--accent);
     border-radius: 12px;
     padding: 1rem 1.2rem;
     transition: all 0.3s ease;
@@ -50,18 +51,11 @@
     overflow: hidden;
   }
 
-  .equation-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(var(--accent-rgb, 0, 212, 255), 0.04) 0%, transparent 60%);
-    pointer-events: none;
-  }
-
   .equation-card.glowing {
     border-color: var(--accent);
-    box-shadow: 0 0 20px rgba(var(--accent-rgb, 0, 212, 255), 0.15),
-                inset 0 0 20px rgba(var(--accent-rgb, 0, 212, 255), 0.05);
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--accent) 15%, transparent),
+      inset 0 0 20px color-mix(in srgb, var(--accent) 5%, transparent);
   }
 
   .card-header {
@@ -69,10 +63,11 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.6rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .card-title {
-    font-family: 'Syne', sans-serif;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.15em;
@@ -113,6 +108,7 @@
     padding: 0.4rem 0.7rem;
     border-radius: 6px;
     display: inline-block;
+    word-break: break-all;
   }
 
   .card-desc {
