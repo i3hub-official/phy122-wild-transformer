@@ -586,34 +586,49 @@
 
   .slider {
     width: 130px;
-    height: 4px;
-    border-radius: 4px;
-    background: rgba(255,255,255,0.12);
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(103,232,249,0.2);
     outline: none;
     -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
+    accent-color: #67e8f9;
+  }
+
+  .slider::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(103,232,249,0.2);
   }
 
   .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: #67e8f9;
     cursor: pointer;
-    box-shadow: 0 0 8px rgba(103,232,249,0.6);
+    box-shadow: 0 0 12px rgba(103,232,249,0.8);
+    border: 2px solid rgba(255,255,255,0.5);
+    margin-top: -6px;
+  }
+
+  .slider::-moz-range-track {
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(103,232,249,0.2);
     border: none;
   }
 
   .slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: #67e8f9;
     cursor: pointer;
-    box-shadow: 0 0 8px rgba(103,232,249,0.6);
-    border: none;
+    box-shadow: 0 0 12px rgba(103,232,249,0.8);
+    border: 2px solid rgba(255,255,255,0.5);
   }
 
   .badge {

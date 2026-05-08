@@ -19,7 +19,7 @@
 
   let {
     primaryTurns = $bindable(200),
-    secondaryTurns = $bindable(20),
+    secondaryTurns = $bindable(4),   // 11000 × (4/200) = 220 V output
     primaryVoltage = $bindable(11000),
     frequency = $bindable(50),
     running = $bindable(true),
@@ -338,7 +338,7 @@
         <label class="ctrl-label"><TrendingDown size={12}/> Secondary Turns (Ns)</label>
         <span class="ctrl-val">{secondaryTurns}</span>
       </div>
-      <input type="range" min="5" max="100" step="5" bind:value={secondaryTurns} class="slider s-secondary"/>
+      <input type="range" min="2" max="100" step="2" bind:value={secondaryTurns} class="slider s-secondary"/>
       <div class="ctrl-hint">Step-Down: {secondaryTurns}/{primaryTurns} = {(secondaryTurns / primaryTurns * 100).toFixed(1)}%</div>
     </div>
 
@@ -522,89 +522,69 @@
   }
   .speed-hint { color: #00FFAA; font-weight: 600; }
 
-  /* Replace the existing slider styles with these */
+  /* ── Sliders ── */
+  .slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.15);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0.6rem 0;
+    cursor: pointer;
+  }
 
-/* Slider base styles */
-.slider {
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.15);
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
-  margin: 0.6rem 0;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+  /* WebKit track */
+  .slider::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.15);
+  }
 
-.slider:hover {
-  height: 8px;
-}
+  /* Base thumb — WebKit */
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.6);
+    cursor: pointer;
+    background: #60A5FA;
+    box-shadow: 0 0 10px rgba(96,165,250,0.6);
+    margin-top: -6px;
+  }
+  /* Base thumb — Firefox */
+  .slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.6);
+    cursor: pointer;
+    background: #60A5FA;
+    box-shadow: 0 0 10px rgba(96,165,250,0.6);
+  }
+  /* Firefox track */
+  .slider::-moz-range-track {
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.15);
+  }
 
-/* WebKit (Chrome, Safari, Edge) */
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  transition: transform 0.1s ease;
-  box-shadow: 0 0 8px currentColor;
-}
+  /* Per-slider colours — WebKit (must be separate rules, no mixing) */
+  .s-primary::-webkit-slider-thumb   { background: #FFAA00; box-shadow: 0 0 10px rgba(255,170,0,0.7); border-color: rgba(255,170,0,0.5); }
+  .s-secondary::-webkit-slider-thumb { background: #44AAFF; box-shadow: 0 0 10px rgba(68,170,255,0.7); border-color: rgba(68,170,255,0.5); }
+  .s-voltage::-webkit-slider-thumb   { background: #FF4466; box-shadow: 0 0 10px rgba(255,68,102,0.7); border-color: rgba(255,68,102,0.5); }
+  .s-freq::-webkit-slider-thumb      { background: #AA44FF; box-shadow: 0 0 10px rgba(170,68,255,0.7); border-color: rgba(170,68,255,0.5); }
+  .s-speed::-webkit-slider-thumb     { background: #00FFAA; box-shadow: 0 0 10px rgba(0,255,170,0.7); border-color: rgba(0,255,170,0.5); }
 
-.slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
+  /* Per-slider colours — Firefox (must be separate rules, no mixing) */
+  .s-primary::-moz-range-thumb   { background: #FFAA00; box-shadow: 0 0 10px rgba(255,170,0,0.7); border-color: rgba(255,170,0,0.5); }
+  .s-secondary::-moz-range-thumb { background: #44AAFF; box-shadow: 0 0 10px rgba(68,170,255,0.7); border-color: rgba(68,170,255,0.5); }
+  .s-voltage::-moz-range-thumb   { background: #FF4466; box-shadow: 0 0 10px rgba(255,68,102,0.7); border-color: rgba(255,68,102,0.5); }
+  .s-freq::-moz-range-thumb      { background: #AA44FF; box-shadow: 0 0 10px rgba(170,68,255,0.7); border-color: rgba(170,68,255,0.5); }
+  .s-speed::-moz-range-thumb     { background: #00FFAA; box-shadow: 0 0 10px rgba(0,255,170,0.7); border-color: rgba(0,255,170,0.5); }
 
-/* Firefox */
-.slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  transition: transform 0.1s ease;
-}
-
-.slider::-moz-range-thumb:hover {
-  transform: scale(1.2);
-}
-
-/* Track styles for Firefox */
-.slider::-moz-range-track {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* Individual slider thumb colors */
-.s-primary::-webkit-slider-thumb { background: #FFAA00; box-shadow: 0 0 8px #FFAA00; }
-.s-primary::-moz-range-thumb { background: #FFAA00; }
-
-.s-secondary::-webkit-slider-thumb { background: #44AAFF; box-shadow: 0 0 8px #44AAFF; }
-.s-secondary::-moz-range-thumb { background: #44AAFF; }
-
-.s-voltage::-webkit-slider-thumb { background: #FF4466; box-shadow: 0 0 8px #FF4466; }
-.s-voltage::-moz-range-thumb { background: #FF4466; }
-
-.s-freq::-webkit-slider-thumb { background: #AA44FF; box-shadow: 0 0 8px #AA44FF; }
-.s-freq::-moz-range-thumb { background: #AA44FF; }
-
-.s-speed::-webkit-slider-thumb { background: #00FFAA; box-shadow: 0 0 8px #00FFAA; }
-.s-speed::-moz-range-thumb { background: #00FFAA; }
-
-/* Focus styles for accessibility */
-.slider:focus {
-  outline: none;
-}
-
-.slider:focus::-webkit-slider-thumb {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 2px;
-}
   /* Ratio */
   .ratio-row {
     display: flex; gap: 0.45rem; font-size: 0.68rem;

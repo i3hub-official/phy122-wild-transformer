@@ -1,6 +1,6 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-  import { Zap, Magnet, Radio, BookOpen, Users } from 'lucide-svelte';
+  import { Zap, Magnet, Radio, BookOpen } from 'lucide-svelte';
   import TransformerSim from '$lib/components/TransformerSim.svelte';
   import FluxSim from '$lib/components/FluxSim.svelte';
   import TechnicalBrief from '$lib/components/TechnicalBrief.svelte';
@@ -8,20 +8,18 @@
 
   let currentView = $state<'main' | 'flux' | 'brief'>('main');
 
-  // Shared simulation state
-  let primaryTurns = $state(400);
-  let secondaryTurns = $state(80);
-  let primaryVoltage = $state(12000);
-  let frequency = $state(60);
-  let running = $state(true);
-  let fluxIntensity = $state(80);
-  
-  // Derived values for Technical Brief
-  let turnsRatio = $derived(secondaryTurns / primaryTurns);
-  let secondaryVoltage = $derived(primaryVoltage * turnsRatio);
+  // Shared simulation state — 11kV × (4/200) = 220V output
+  let primaryTurns   = $state(200);
+  let secondaryTurns = $state(4);
+  let primaryVoltage = $state(11000);
+  let frequency      = $state(50);
+  let running        = $state(true);
+  let fluxIntensity  = $state(80);
 
-   // Additional derived values for Technical Brief
-  let inducedEMF = $derived(secondaryTurns * 2 * Math.PI * frequency * (primaryVoltage / (2 * Math.PI * frequency * primaryTurns)));
+  // Derived values passed to TechnicalBrief
+  let turnsRatio        = $derived(secondaryTurns / primaryTurns);
+  let secondaryVoltage  = $derived(primaryVoltage * turnsRatio);
+  let inducedEMF        = $derived(secondaryTurns * 2 * Math.PI * frequency * (primaryVoltage / (2 * Math.PI * frequency * primaryTurns)));
   let instantaneousFlux = $derived((primaryVoltage / (2 * Math.PI * frequency * primaryTurns)) * 0.5);
 </script>
 
@@ -87,25 +85,23 @@
     {:else if currentView === 'flux'}
       <FluxSim bind:intensity={fluxIntensity} isAC={true} />
     {:else}
-     {#if currentView === 'brief'}
-  <TechnicalBrief
-    turnsRatio={turnsRatio}
-    primaryTurns={primaryTurns}
-    secondaryTurns={secondaryTurns}
-    primaryVoltage={primaryVoltage}
-    secondaryVoltage={secondaryVoltage}
-    frequency={frequency}
-    inducedEMF={inducedEMF}
-    instantaneousFlux={instantaneousFlux}
-  />
-{/if}
+      <TechnicalBrief
+        {turnsRatio}
+        {primaryTurns}
+        {secondaryTurns}
+        {primaryVoltage}
+        {secondaryVoltage}
+        {frequency}
+        {inducedEMF}
+        {instantaneousFlux}
+      />
     {/if}
   </main>
 
-  <!-- ─── Team Footer (Visible on all pages) ──────────────── -->
+  <!-- ─── Team Footer (all tabs) ───────────────────────── -->
   <TeamFooter />
 
-  <!-- ─── Footer ───────────────────────────────────────── -->
+  <!-- ─── Page Footer ──────────────────────────────────── -->
   <footer class="footer">
     <Zap size={12} class="footer-icon" />
     COLPAS Group &nbsp;·&nbsp; PHY122 Presentation &nbsp;·&nbsp; Real-time Electromagnetic Induction
@@ -235,7 +231,7 @@
     padding: 2rem 1.5rem;
   }
 
-  /* ── Footer ── */
+  /* ── Page Footer ── */
   .footer {
     border-top: 1px solid #27272a;
     padding: 1.25rem;
@@ -255,7 +251,7 @@
     .hero { padding: 2rem 1rem 1.75rem; }
     .tab-nav { padding: 0 1rem; }
     .content { padding: 1.25rem 1rem; }
-    .tab-btn span { font-size: 0; }
+    .tab-btn span { display: none; }
     .tab-btn { padding: 0.6rem 1rem; }
   }
 </style>
