@@ -1,7 +1,7 @@
 <!-- src/lib/components/FluxSim.svelte -->
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { Zap, ZapOff, Info } from 'lucide-svelte';
+  import { Zap, ZapOff, Info, Eye, EyeOff, RotateCcw } from 'lucide-svelte';
 
   let { intensity = $bindable(50), isAC = $bindable(true) } = $props();
 
@@ -10,6 +10,10 @@
   let animationFrame: number | null = null;
   let particles: Array<{ progress: number; offset: number }> = [];
   let time = 0;
+  let showCoils = $state(true);
+  let inputPhase = $state(0);
+  let fluxValue = $state(0);
+  let inducedVoltage = $state(0);
 
   // Fixed internal canvas dimensions (drawing space)
   const CANVAS_W = 600;
@@ -21,6 +25,10 @@
       progress: Math.random(),
       offset: (Math.random() - 0.5) * 30
     }));
+  }
+
+  function resetParticles() {
+    initParticles();
   }
 
   /** Maps progress 0–1 to (x,y) along the rectangular loop */
@@ -42,6 +50,59 @@
       y = core.y + core.h - ((t - 0.75) / 0.25) * core.h;
     }
     return { x, y };
+  }
+
+  function drawCoil(
+    c: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string,
+    isLeft: boolean
+  ) {
+    const turns = 6;
+    const stepY = height / (turns * 2);
+    
+    for (let i = 0; i < turns; i++) {
+      const yPos = y + i * stepY * 2;
+      if (isLeft) {
+        // Left coil (primary)
+        c.beginPath();
+        c.ellipse(x + width/2, yPos, width/2, stepY, 0, 0, Math.PI * 2);
+        c.strokeStyle = color;
+        c.lineWidth = 3;
+        c.stroke();
+      } else {
+        // Right coil (secondary)
+        c.beginPath();
+        c.ellipse(x + width/2, yPos, width/2, stepY, 0, 0, Math.PI * 2);
+        c.strokeStyle = color;
+        c.lineWidth = 3;
+        c.stroke();
+      }
+    }
+  }
+
+  function drawArrow(
+    c: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    dir: 'left' | 'right'
+  ) {
+    const size = 8;
+    c.beginPath();
+    if (dir === 'right') {
+      c.moveTo(x - size, y - size / 2);
+      c.lineTo(x + size, y);
+      c.lineTo(x - size, y + size / 2);
+    } else {
+      c.moveTo(x + size, y - size / 2);
+      c.lineTo(x - size, y);
+      c.lineTo(x + size, y + size / 2);
+    }
+    c.closePath();
+    c.fill();
   }
 
   function animate() {
@@ -74,15 +135,43 @@
 
     // Core label
     ctx.fillStyle = 'rgba(148,163,184,0.6)';
-    ctx.font = '11px monospace';
+    ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('IRON CORE', CANVAS_W / 2, CANVAS_H / 2 + 5);
+    ctx.fillText('MAGNETIC CORE', CANVAS_W / 2, CANVAS_H / 2 + 5);
+
+    // Draw coils if enabled
+    if (showCoils) {
+      // Primary coil (left)
+      drawCoil(ctx, core.x - 50, core.y + 20, 40, core.h - 40, '#f59e0b', true);
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PRIMARY', core.x - 30, core.y + core.h / 2);
+      
+      // Secondary coil (right)
+      drawCoil(ctx, core.x + core.w + 10, core.y + 20, 40, core.h - 40, '#22d3ee', false);
+      ctx.fillStyle = '#22d3ee';
+      ctx.fillText('SECONDARY', core.x + core.w + 30, core.y + core.h / 2);
+    } else {
+      // Just text labels
+      ctx.fillStyle = 'rgba(245,158,11,0.5)';
+      ctx.font = 'bold 9px monospace';
+      ctx.fillText('PRIMARY', core.x - 30, core.y + core.h / 2);
+      ctx.fillStyle = 'rgba(34,211,238,0.5)';
+      ctx.fillText('SECONDARY', core.x + core.w + 30, core.y + core.h / 2);
+    }
 
     // Time & velocity
     time += 0.016;
+    const angularFreq = isAC ? 2 * Math.PI * 60 : 0;
     const speedFactor = isAC
       ? Math.sin(time * 3) * (intensity / 600)
       : intensity / 800;
+
+    // Update live metrics
+    inputPhase = isAC ? ((time * 2 * Math.PI * 60) % (2 * Math.PI)) : 0;
+    fluxValue = isAC ? Math.sin(time * 2 * Math.PI * 60) * (intensity / 100) : intensity / 100;
+    inducedVoltage = isAC ? Math.abs(Math.cos(time * 2 * Math.PI * 60) * fluxValue * 10) : 0;
 
     // Particles
     ctx.shadowBlur = 12;
@@ -109,27 +198,6 @@
     animationFrame = requestAnimationFrame(animate);
   }
 
-  function drawArrow(
-    c: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    dir: 'left' | 'right'
-  ) {
-    const size = 8;
-    c.beginPath();
-    if (dir === 'right') {
-      c.moveTo(x - size, y - size / 2);
-      c.lineTo(x + size, y);
-      c.lineTo(x - size, y + size / 2);
-    } else {
-      c.moveTo(x + size, y - size / 2);
-      c.lineTo(x - size, y);
-      c.lineTo(x + size, y + size / 2);
-    }
-    c.closePath();
-    c.fill();
-  }
-
   onMount(() => {
     if (!canvas) return;
     ctx = canvas.getContext('2d');
@@ -145,15 +213,52 @@
 </script>
 
 <div class="flux-container">
-  <!-- Canvas -->
-  <div class="canvas-wrap">
-    <canvas bind:this={canvas} class="flux-canvas"></canvas>
+  <!-- Header -->
+  <div class="flux-header">
+    <h3 class="flux-title">
+      {isAC ? 'Transformer Flux & Induction (AC)' : 'Transformer Flux & Induction (DC)'}
+    </h3>
+    <p class="flux-subtitle">
+      {isAC 
+        ? 'AC: Changing flux induces alternating voltage in secondary coil.'
+        : 'DC: Constant flux. Magnetic field is stationary. No voltage induced in secondary.'}
+    </p>
+  </div>
+
+  <!-- Canvas & Metrics Row -->
+  <div class="visualization-row">
+    <!-- Canvas -->
+    <div class="canvas-wrap">
+      <canvas bind:this={canvas} class="flux-canvas"></canvas>
+    </div>
+
+    <!-- Metrics Panel -->
+    <div class="metrics-panel">
+      <div class="metric-card">
+        <div class="metric-label">INPUT PHASE</div>
+        <div class="metric-value">
+          {isAC ? inputPhase.toFixed(2) + ' rad' : 'Steady'}
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">FLUX (Φ)</div>
+        <div class="metric-value" class:ac-value={isAC && fluxValue > 0} class:dc-value={!isAC}>
+          {fluxValue.toFixed(2)} Wb
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">INDUCED V</div>
+        <div class="metric-value" class:ac-value={inducedVoltage > 0}>
+          {inducedVoltage.toFixed(2)} V
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Controls -->
   <div class="controls">
     <div class="control-group">
-      <label class="ctrl-label">Flux Intensity</label>
+      <label class="ctrl-label">Magnetic Intensity</label>
       <div class="slider-row">
         <input
           type="range"
@@ -164,23 +269,45 @@
         />
         <span class="badge">{intensity}</span>
       </div>
-      <span class="hint">Higher intensity = stronger magnetic flux</span>
     </div>
 
-    <button
-      class="mode-btn"
-      class:ac={isAC}
-      class:dc={!isAC}
-      onclick={() => (isAC = !isAC)}
-    >
-      {#if isAC}
-        <Zap size={16} />
-        Alternating Current (AC)
-      {:else}
-        <ZapOff size={16} />
-        Direct Current (DC)
-      {/if}
-    </button>
+    <div class="button-group">
+      <button
+        class="mode-btn"
+        class:ac={isAC}
+        class:dc={!isAC}
+        onclick={() => (isAC = !isAC)}
+      >
+        {#if isAC}
+          <Zap size={16} />
+          AC
+        {:else}
+          <ZapOff size={16} />
+          DC
+        {/if}
+      </button>
+
+      <button
+        class="action-btn"
+        onclick={() => (showCoils = !showCoils)}
+      >
+        {#if showCoils}
+          <Eye size={16} />
+          Hide Coils
+        {:else}
+          <EyeOff size={16} />
+          Show Coils
+        {/if}
+      </button>
+
+      <button
+        class="action-btn"
+        onclick={resetParticles}
+      >
+        <RotateCcw size={16} />
+        Reset Particles
+      </button>
+    </div>
   </div>
 
   <!-- Info note -->
@@ -188,9 +315,9 @@
     <Info size={16} class="note-icon" />
     <p class="note-text">
       {#if isAC}
-        <strong>AC Mode:</strong> Particles oscillate back and forth, changing direction with the alternating current — mirroring real transformer flux behaviour.
+        <strong>AC Mode:</strong> Changing magnetic flux induces alternating voltage in the secondary coil. The particles oscillate back and forth, mirroring real transformer behaviour.
       {:else}
-        <strong>DC Mode:</strong> Particles flow in a single direction, showing constant magnetic flux. Note: DC cannot induce a changing EMF, so transformers require AC.
+        <strong>DC Mode:</strong> Constant magnetic field means no changing flux → no induced voltage. Transformers require AC to function!
       {/if}
     </p>
   </div>
@@ -207,9 +334,40 @@
     gap: 1.25rem;
   }
 
+  /* Header */
+  .flux-header {
+    text-align: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(103, 232, 249, 0.15);
+  }
+
+  .flux-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.3rem 0;
+    background: linear-gradient(135deg, #67e8f9, #a855f7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .flux-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+  }
+
+  /* Visualization Row */
+  .visualization-row {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+
   /* Canvas */
   .canvas-wrap {
-    width: 100%;
+    flex: 2;
+    min-width: 300px;
     overflow: hidden;
     border-radius: 14px;
     border: 1px solid rgba(103, 232, 249, 0.15);
@@ -223,12 +381,55 @@
     height: auto;
   }
 
-  /* Controls row */
+  /* Metrics Panel */
+  .metrics-panel {
+    flex: 1;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .metric-card {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 0.75rem;
+    border: 1px solid rgba(103, 232, 249, 0.1);
+    text-align: center;
+  }
+
+  .metric-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.4rem;
+  }
+
+  .metric-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    color: #67e8f9;
+  }
+
+  .metric-value.ac-value {
+    color: #67e8f9;
+    text-shadow: 0 0 8px rgba(103, 232, 249, 0.3);
+  }
+
+  .metric-value.dc-value {
+    color: #f472b6;
+  }
+
+  /* Controls */
   .controls {
     display: flex;
     flex-wrap: wrap;
     gap: 1.25rem;
     align-items: flex-end;
+    justify-content: space-between;
   }
 
   .control-group {
@@ -275,16 +476,6 @@
     border: none;
   }
 
-  .slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #67e8f9;
-    cursor: pointer;
-    box-shadow: 0 0 8px #67e8f9;
-    border: none;
-  }
-
   .badge {
     background: rgba(103, 232, 249, 0.12);
     padding: 0.2rem 0.55rem;
@@ -298,45 +489,54 @@
     flex-shrink: 0;
   }
 
-  .hint {
-    font-size: 0.63rem;
-    color: rgba(255, 255, 255, 0.28);
-    font-family: 'Space Mono', monospace;
+  .button-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
   }
 
   /* Mode toggle */
-  .mode-btn {
+  .mode-btn, .action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.7rem 1.4rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 40px;
     font-weight: 600;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     border: 1px solid rgba(103, 232, 249, 0.3);
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
+    transition: all 0.2s ease;
     white-space: nowrap;
+    background: rgba(103, 232, 249, 0.08);
+    color: #67e8f9;
   }
 
   .mode-btn.ac {
-    background: rgba(103, 232, 249, 0.1);
+    background: rgba(103, 232, 249, 0.12);
     color: #67e8f9;
-    border-color: rgba(103, 232, 249, 0.3);
+    border-color: rgba(103, 232, 249, 0.4);
   }
 
   .mode-btn.dc {
-    background: rgba(244, 114, 182, 0.1);
+    background: rgba(244, 114, 182, 0.12);
     color: #f472b6;
-    border-color: rgba(244, 114, 182, 0.3);
+    border-color: rgba(244, 114, 182, 0.4);
   }
 
-  .mode-btn:hover {
+  .action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .mode-btn:hover, .action-btn:hover {
     transform: translateY(-2px);
   }
 
   .mode-btn.ac:hover { background: rgba(103, 232, 249, 0.2); }
   .mode-btn.dc:hover { background: rgba(244, 114, 182, 0.2); }
+  .action-btn:hover { background: rgba(255, 255, 255, 0.1); }
 
   /* Info note */
   .note {
@@ -354,14 +554,9 @@
     border-left-color: #f472b6;
   }
 
-  :global(.note-icon) {
-    color: #67e8f9;
+  .note-icon {
     flex-shrink: 0;
     margin-top: 1px;
-  }
-
-  .note.note-dc :global(.note-icon) {
-    color: #f472b6;
   }
 
   .note-text {
@@ -380,10 +575,27 @@
   }
 
   /* Responsive */
+  @media (max-width: 768px) {
+    .visualization-row {
+      flex-direction: column;
+    }
+    
+    .metrics-panel {
+      flex-direction: row;
+      min-width: auto;
+    }
+    
+    .metric-card {
+      flex: 1;
+    }
+  }
+
   @media (max-width: 640px) {
     .flux-container { padding: 1rem; border-radius: 16px; }
     .controls { flex-direction: column; align-items: stretch; }
     .control-group { min-width: unset; }
-    .mode-btn { justify-content: center; width: 100%; }
+    .button-group { justify-content: center; }
+    .mode-btn, .action-btn { justify-content: center; flex: 1; }
+    .metrics-panel { flex-direction: column; }
   }
 </style>
