@@ -11,33 +11,33 @@ export interface Student {
 
 export const students: Student[] = [
   {
-    fullName: "Adebayo Oluwaseun David",
-    matricNumber: "PHY/2023/001",
+    fullName: "OKORAFOR CHUKWUEMEKA APIA",
+    matricNumber: "MOUAU/PHY/25/128699",
     college: "College of Physical Sciences",
     department: "Department of Physics",
-    whatsappNumber: "+234 801 234 5678",
+    whatsappNumber: "+234 902 149 1241",
     role: "Project Manager & Course Rep",
     roleDescription: "Coordinates meetings, ensures deadlines are met, and compiles the final report."
   },
   {
-    fullName: "Okafor Chiamaka Grace",
-    matricNumber: "PHY/2023/002",
+    fullName: "DIVINE JOSEPH CHIBUIKEM",
+    matricNumber: "MOUAU/CMP/25/130962",
     college: "College of Physical Sciences",
-    department: "Department of Physics",
-    whatsappNumber: "+234 802 345 6789",
-    role: "Lead Physicist",
-    roleDescription: "Responsible for ensuring the mathematical formulas (Faraday's Law, Energy Density) are correctly applied."
-  },
-  {
-    fullName: "Eze Daniel Chukwudi",
-    matricNumber: "PHY/2023/003",
-    college: "College of Physical Sciences",
-    department: "Department of Physics",
-    whatsappNumber: "+234 803 456 7890",
-    role: "Field Researcher",
+    department: "Department of Computer Science",
+    whatsappNumber: "+234 704 693 1442",
+    role: "Project Manager & Course Rep",
     roleDescription: "Gathers real-world data (photos of local transformers, checking generator specs, interviewing local solar installers)."
   },
   {
+    fullName: "EGWUONWU CHIBUZOR ONYEUKWU",
+    matricNumber: "MOUAU/CMP/25/130441",
+    college: "College of Physical Sciences",
+    department: "Department of Computer Science",
+    whatsappNumber: "+234 814 521 6303",
+    role: "Field Researcher",
+    roleDescription: "Responsible for ensuring the mathematical formulas (Faraday's Law, Energy Density) are correctly applied."
+  },
+   {
     fullName: "OGWO GODSPOWER CHINAZA",
     matricNumber: "MOUAU/PHY/25/128468",
     college: "College of Physical Sciences",
@@ -46,24 +46,7 @@ export const students: Student[] = [
     role: "Technical Writer & Presenter",
     roleDescription: "Drafts final explanations, ensures physics is explained simply and clearly, leads class presentation."
   },
-  {
-    fullName: "Ogunleye Joshua Olumide",
-    matricNumber: "PHY/2023/005",
-    college: "College of Physical Sciences",
-    department: "Department of Physics",
-    whatsappNumber: "+234 805 678 9012",
-    role: "Q&A Specialist",
-    roleDescription: "Prepares and leads the Question & Answer section, ensures all college members participate."
-  },
-  {
-    fullName: "Nwachukwu Emmanuel Chinedu",
-    matricNumber: "PHY/2023/006",
-    college: "College of Physical Sciences",
-    department: "Department of Physics",
-    whatsappNumber: "+234 806 789 0123",
-    role: "Research & Documentation Lead",
-    roleDescription: "Compiles research findings, manages documentation, and supports presentation materials."
-  }
+  
 ];
 
 // Helper function to get formatted WhatsApp links
