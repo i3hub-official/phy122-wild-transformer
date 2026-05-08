@@ -32,14 +32,22 @@
   let activeLaw = $state<'faraday' | 'lenz'>('faraday');
 
   // ── Simulation ──────────────────────────────────────────────
+  // primaryVoltage is treated as RMS (how grid voltage is always quoted).
+  // Peak = RMS × √2. All waveform math uses peak; RMS outputs divide by √2.
   let sim = $derived((() => {
-    const turnsRatio = secondaryTurns / primaryTurns;
-    const angularFreq = 2 * Math.PI * frequency;
-    const instantaneousPrimary = primaryVoltage * Math.sin(angularFreq * time);
-    const instantaneousSecondary = instantaneousPrimary * turnsRatio;
-    const fluxAmplitude = primaryVoltage / (angularFreq * primaryTurns);
-    const instantaneousFlux = fluxAmplitude * Math.sin(angularFreq * time);
-    const inducedEMF = -secondaryTurns * (angularFreq * fluxAmplitude) * Math.cos(angularFreq * time);
+    const turnsRatio    = secondaryTurns / primaryTurns;
+    const angularFreq   = 2 * Math.PI * frequency;
+    const primaryPeak   = primaryVoltage * Math.SQRT2;          // e.g. 11000 × √2 = 15,556 V peak
+    const secondaryRMS  = primaryVoltage * turnsRatio;          // e.g. 11000 × (4/200) = 220 V RMS
+    const secondaryPeak = secondaryRMS * Math.SQRT2;            // 220 × √2 = 311 V peak
+
+    const instantaneousPrimary   = primaryPeak * Math.sin(angularFreq * time);
+    const instantaneousSecondary = secondaryPeak * Math.sin(angularFreq * time);
+
+    const fluxAmplitude      = primaryPeak / (angularFreq * primaryTurns);
+    const instantaneousFlux  = fluxAmplitude * Math.sin(angularFreq * time);
+    const inducedEMF         = -secondaryTurns * (angularFreq * fluxAmplitude) * Math.cos(angularFreq * time);
+
     return {
       turnsRatio,
       instantaneousPrimary,
@@ -48,8 +56,8 @@
       instantaneousFlux,
       inducedEMF,
       secondaryVoltage: Math.abs(instantaneousSecondary),
-      secondaryRMS: Math.abs(instantaneousSecondary) * 0.707,
-      primaryRMS: Math.abs(instantaneousPrimary) * 0.707,
+      secondaryRMS,                                             // steady, correct: 220 V
+      primaryRMS: primaryVoltage,                               // already RMS by definition
     };
   })());
 
