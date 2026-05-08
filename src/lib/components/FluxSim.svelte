@@ -61,27 +61,27 @@
     color: string,
     isLeft: boolean
   ) {
-    const turns = 6;
+    c.save();
+    c.globalAlpha = 0.8;
+    const turns = 8;
     const stepY = height / (turns * 2);
     
     for (let i = 0; i < turns; i++) {
-      const yPos = y + i * stepY * 2;
+      const yPos = y + i * stepY * 2 + stepY;
+      c.beginPath();
+      
       if (isLeft) {
-        // Left coil (primary)
-        c.beginPath();
-        c.ellipse(x + width/2, yPos, width/2, stepY, 0, 0, Math.PI * 2);
-        c.strokeStyle = color;
-        c.lineWidth = 3;
-        c.stroke();
+        // Left coil (primary) - wraps around core left side, positioned closer
+        c.ellipse(x + width, yPos, width, stepY * 0.8, 0, 0, Math.PI * 2);
       } else {
-        // Right coil (secondary)
-        c.beginPath();
-        c.ellipse(x + width/2, yPos, width/2, stepY, 0, 0, Math.PI * 2);
-        c.strokeStyle = color;
-        c.lineWidth = 3;
-        c.stroke();
+        // Right coil (secondary) - wraps around core right side, positioned closer
+        c.ellipse(x, yPos, width, stepY * 0.8, 0, 0, Math.PI * 2);
       }
+      c.strokeStyle = color;
+      c.lineWidth = 2.5;
+      c.stroke();
     }
+    c.restore();
   }
 
   function drawArrow(
@@ -139,31 +139,30 @@
     ctx.textAlign = 'center';
     ctx.fillText('MAGNETIC CORE', CANVAS_W / 2, CANVAS_H / 2 + 5);
 
-    // Draw coils if enabled
+    // Draw coils if enabled - MOVED CLOSER TO CORE
     if (showCoils) {
-      // Primary coil (left)
-      drawCoil(ctx, core.x - 50, core.y + 20, 40, core.h - 40, '#f59e0b', true);
+      // Primary coil (left) - moved from -50 to -30 (closer to core)
+      drawCoil(ctx, core.x - 30, core.y + 15, 25, core.h - 30, '#f59e0b', true);
       ctx.fillStyle = '#f59e0b';
       ctx.font = 'bold 10px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('PRIMARY', core.x - 30, core.y + core.h / 2);
+      ctx.fillText('PRIMARY', core.x - 18, core.y + core.h / 2);
       
-      // Secondary coil (right)
-      drawCoil(ctx, core.x + core.w + 10, core.y + 20, 40, core.h - 40, '#22d3ee', false);
+      // Secondary coil (right) - moved from +10 to -5 (closer to core)
+      drawCoil(ctx, core.x + core.w - 5, core.y + 15, 25, core.h - 30, '#22d3ee', false);
       ctx.fillStyle = '#22d3ee';
-      ctx.fillText('SECONDARY', core.x + core.w + 30, core.y + core.h / 2);
+      ctx.fillText('SECONDARY', core.x + core.w + 18, core.y + core.h / 2);
     } else {
       // Just text labels
       ctx.fillStyle = 'rgba(245,158,11,0.5)';
       ctx.font = 'bold 9px monospace';
-      ctx.fillText('PRIMARY', core.x - 30, core.y + core.h / 2);
+      ctx.fillText('PRIMARY', core.x - 18, core.y + core.h / 2);
       ctx.fillStyle = 'rgba(34,211,238,0.5)';
-      ctx.fillText('SECONDARY', core.x + core.w + 30, core.y + core.h / 2);
+      ctx.fillText('SECONDARY', core.x + core.w + 18, core.y + core.h / 2);
     }
 
     // Time & velocity
     time += 0.016;
-    const angularFreq = isAC ? 2 * Math.PI * 60 : 0;
     const speedFactor = isAC
       ? Math.sin(time * 3) * (intensity / 600)
       : intensity / 800;
