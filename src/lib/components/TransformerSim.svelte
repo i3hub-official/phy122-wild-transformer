@@ -239,18 +239,34 @@
       <!-- Output leads -->
       <line x1="350" y1="200" x2="360" y2="200"
         stroke="rgba(68,170,255,{0.4 + emfGlow * 0.3})" stroke-width="2"/>
-      <line x1="540" y1="200" x2="570" y2="200"
+      <line x1="540" y1="200" x2="575" y2="200"
         stroke="rgba(68,170,255,{0.4 + emfGlow * 0.3})" stroke-width="2"
         marker-end="url(#arr-s)"/>
 
-      <!-- House icon — SVG geometry, no emoji -->
-      <g transform="translate(564, 187)" stroke="rgba(68,170,255,0.85)" stroke-width="1.5"
-         fill="none" stroke-linejoin="round">
-        <polyline points="0,13 7,4 14,13"/>
-        <rect x="2" y="13" width="10" height="9" rx="1"/>
-        <rect x="5" y="16" width="4" height="6"/>
+      <!-- House icon — large, above the arrow line -->
+      <g transform="translate(548, 110)" stroke="rgba(68,170,255,0.95)" stroke-width="2"
+         fill="rgba(68,170,255,0.12)" stroke-linejoin="round">
+        <!-- roof -->
+        <polyline points="0,22 14,4 28,22" fill="none"/>
+        <!-- walls -->
+        <rect x="3" y="22" width="22" height="18" rx="1"/>
+        <!-- door -->
+        <rect x="10" y="29" width="8" height="11"/>
+        <!-- chimney -->
+        <rect x="19" y="8" width="4" height="8" rx="0.5"/>
       </g>
-      <text x="571" y="212" class="lbl-sub lbl-sub-s">{sim.secondaryVoltage.toFixed(0)}V</text>
+
+      <!-- Voltage pill: shows RMS (steady, readable) -->
+      <!-- pill background -->
+      <rect x="536" y="140" width="56" height="22" rx="11"
+        fill="rgba(10,20,40,0.85)"
+        stroke="rgba(68,170,255,0.6)" stroke-width="1.2"/>
+      <!-- RMS label -->
+      <text x="564" y="155" text-anchor="middle" class="lbl-rms">
+        {sim.secondaryRMS.toFixed(0)} V
+      </text>
+      <!-- "RMS" subscript -->
+      <text x="564" y="170" text-anchor="middle" class="lbl-rms-sub">RMS</text>
 
       <!-- Coil labels -->
       <text x="150" y="128" text-anchor="middle" class="lbl-coil lbl-coil-p">PRIMARY</text>
@@ -457,6 +473,15 @@
   .lbl-sub { font-size: 7px; font-family: 'Space Mono', monospace; fill: rgba(255,255,255,0.3); }
   .lbl-sub-s { fill: rgba(68,170,255,0.9); font-size: 8px; }
   .lbl-flux { font-size: 9px; font-family: 'Space Mono', monospace; fill: rgba(0,212,255,0.6); }
+  .lbl-rms {
+    font-size: 11px; font-family: 'Space Mono', monospace; font-weight: 700;
+    fill: #67e8f9; letter-spacing: 0.04em;
+    filter: drop-shadow(0 0 4px rgba(68,170,255,0.8));
+  }
+  .lbl-rms-sub {
+    font-size: 7px; font-family: 'Space Mono', monospace;
+    fill: rgba(68,170,255,0.55); letter-spacing: 0.12em;
+  }
   .lbl-emf  { font-size: 9px; font-family: 'Space Mono', monospace; fill: rgba(170,68,255,0.8); }
 
   /* ── Waveforms ── */
